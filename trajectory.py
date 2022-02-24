@@ -55,6 +55,7 @@ filename = 'sensor_data/encoder.csv'
 timestamp,data = read_data_from_csv(filename)
 
 timestamp = (timestamp-timestamp[0])/1000000000
+
 n = timestamp.shape[0]
 time_encoder = np.reshape(timestamp,(n,1))
 time_encoder_final = time_encoder[1:n]
@@ -106,6 +107,17 @@ def vehicle_to_world_transformation(lidar_vehicle,t):
       T_vehicle2world[i] = [[np.cos(delta_yaw_cum[time_index]), -np.sin(delta_yaw_cum[time_index]), 0, x_cum[i]], [np.sin(delta_yaw_cum[time_index]), np.cos(delta_yaw_cum[time_index]), 0, y_cum[i]], [0, 0, 1, 1], [0, 0, 0, 1]]
       lidar_world[i] = (np.matmul(T_vehicle2world[i],lidar_vehicle[i].transpose())).transpose()
   return lidar_world
+
+
+def vehicle_to_world(lidar_vehicle,t,index):
+    #T_vehicle2world = np.zeros((4,4))    # (4, 4)
+    #lidar_world = np.zeros(lidar_vehicle.shape)  #(100x4)
+    time_index = argmin(time_fog_10,t[index])
+    T_vehicle2world = [[np.cos(delta_yaw_cum[time_index]), -np.sin(delta_yaw_cum[time_index]), 0, x_cum[index]], [np.sin(delta_yaw_cum[time_index]), np.cos(delta_yaw_cum[time_index]), 0, y_cum[index]], [0, 0, 1, 1], [0, 0, 0, 1]]
+   
+    lidar_world = (np.matmul((T_vehicle2world),(lidar_vehicle).transpose())).transpose()
+
+    return lidar_world
 
 
 

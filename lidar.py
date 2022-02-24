@@ -40,9 +40,9 @@ def run_lidar():
 
     lidar_3d_in_vehicle_frame = lidar_to_vehicle_transformation(data)   # Function which transforms Lidar values from lidar frame to vehicle frame 
 
-    lidar_3d_in_world_frame = vehicle_to_world_transformation(lidar_3d_in_vehicle_frame,timestamp)
+    # lidar_3d_in_world_frame = vehicle_to_world_transformation(lidar_3d_in_vehicle_frame,timestamp)
 
- 
+
     # for i in range(0,lidar_3d_in_world_frame.shape[0]):
     #     for j in range(0,lidar_3d_in_world_frame.shape[1]):
     #         if(np.logical_and(lidar_3d_in_world_frame[i,j,0]>8,lidar_3d_in_world_frame[i,j,1]>8)):
@@ -54,7 +54,7 @@ def run_lidar():
 
     # plt.plot(x_c,y_c,color="r")
     # plt.savefig('lidar in world frame.png')
-    return lidar_3d_in_world_frame
+    return lidar_3d_in_vehicle_frame,timestamp
     
 
 

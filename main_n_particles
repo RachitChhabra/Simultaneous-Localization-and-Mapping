@@ -1,0 +1,46 @@
+import math
+from operator import index
+from tqdm import tqdm
+import pandas as pd
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt; plt.ion()
+from mpl_toolkits.mplot3d import Axes3D
+import time
+from pr2_utils import read_data_from_csv,lidar_to_vehicle_transformation, tic,toc,bresenham2D
+from trajectory import vehicle_to_world_transformation,get_vehicle_pos,vehicle_to_world
+from lidar import run_lidar
+
+##------  Initialise Rotation Matrices  ------##
+
+R_vehicle2lidar   = np.matrix('0.00130201 0.796097 0.605167; 0.999999 -0.000419027 -0.00160026; -0.00102038 0.605169 -0.796097')
+p_vehicle2lidar   = np.matrix('0.8349; -0.0126869; 1.76416')
+T_vehicle2lidar   = np.matrix('0.00130201 0.796097 0.605167 0.8349;0.999999 -0.000419027 -0.00160026 -0.0126869; -0.00102038 0.605169 -0.796097 1.76416; 0 0 0 1')
+RPY_vehicle2lidar = np.matrix('142.759; 0.0584636; 89.9254')
+
+R_vehicle2stereo   = np.matrix('-0.00680499 -0.0153215 0.99985; -0.999977 0.000334627 -0.00680066; -0.000230383 -0.999883 -0.0153234')
+p_vehicle2stereo   = np.matrix('1.64239; 0.247401; 1.58411')
+T_vehicle2stereo   = np.matrix('-0.00680499 -0.0153215 0.99985 1.64239; -0.999977 0.000334627 -0.00680066 0.247401; -0.000230383 -0.999883 -0.0153234 1.58411; 0 0 0 1')
+RPY_vehicle2stereo = np.matrix('-90.878; 0.0132; -90.3899')
+
+R_vehicle2fog   = np.matrix('1 0 0; 0 1 0; 0 0 1')
+p_vehicle2fog   = np.matrix('-0.335; -0.035; 0.78')
+T_vehicle2fog   = np.matrix('1 0 0 -0.335; 0 1 0 -0.035; 0 0 1 0.78; 0 0 0 1')
+RPY_vehicle2fog = np.matrix('0 0 0')
+
+##--------  Get data from CSV files  --------##
+
+# Encoder Data
+filename = 'sensor_data/encoder.csv'
+timestamp,data = read_data_from_csv(filename)     #data->(116048, 2), timestamp -> (116048,)
+
+timestamp = (timestamp-timestamp[0])/1000000000
+
+##--------  Number of particles  --------##
+no_of_particles = 300
+alpha = np.zeros((no_of_particles,1))
+alpha = 1/no_of_particles
+
+##--------  Addition of Noise  --------##
+noise = np.random.normal(0,0.1,(data.shape[0],no_of_particles,3))
+print(noise.shape)
