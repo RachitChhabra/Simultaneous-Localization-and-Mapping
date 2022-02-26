@@ -62,8 +62,8 @@ time_encoder_final = time_encoder[1:n]
 v=np.zeros((n))
 v_avg=np.zeros((n))
 
-# Velocity of the robot.
-v = (math.pi*0.6234792*(data[1:n,:]-data[0:n-1,:]))/(4096)#*(time_encoder[1:n]-time_encoder[0:n-1]))
+# Position of the robot.
+v = (math.pi*0.6234792*(data[1:n,:]-data[0:n-1,:]))/(4096)
 v_left = np.reshape(v[:,0],(n-1,1))
 
 # FOG Data

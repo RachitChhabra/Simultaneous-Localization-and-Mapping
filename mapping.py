@@ -19,8 +19,9 @@ resolution = int(500/res)
 
 lidar_3d_in_vehicle_frame,timestamp=run_lidar()
 
+print(lidar_3d_in_vehicle_frame.shape)
 
-for i in tqdm(range(0,lidar_3d_in_vehicle_frame.shape[0])):
+for i in tqdm(range(1000)):
     indexValid = np.where(np.logical_and((np.square(lidar_3d_in_vehicle_frame[i,:,0])+np.square(lidar_3d_in_vehicle_frame[i,:,1])<2500),(np.square(lidar_3d_in_vehicle_frame[i,:,0])+np.square(lidar_3d_in_vehicle_frame[i,:,1])>9)))
     
     lidar_values_in_range = lidar_3d_in_vehicle_frame[i,indexValid,:]
