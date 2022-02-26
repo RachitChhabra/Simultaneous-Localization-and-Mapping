@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt;
 from pr2_utils import read_data_from_csv,bresenham2D, mapCorrelation
 from predict import *
 
-res = 0.1
+res = 0.4
 map = np.zeros((int(2000/res),int(2000/res))) + 0.5
 
 resolution = int(500/res)
@@ -58,10 +58,10 @@ def update(xy, iteration, alpha):
         x_coordinate = np.array(x_coordinate)
         y_coordinate = np.array(y_coordinate)
 
-        map[-y_coordinate+resolution,x_coordinate+resolution] += np.log(4)
+        map[-y_coordinate+resolution,x_coordinate+resolution] += np.log(8)
 
         if(map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution]>-5):
-            map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution] -= np.log(16)
+            map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution] -= np.log(64)
 
 
 
@@ -92,8 +92,8 @@ def get_lidar_coordinates(xy, iteration):           ## xy = [x , y , theta] -> (
 
     time_index = argmin(timestamp_lidar,timestamp_encoder[iteration])
 
-    lidar_x = lidar_xy[time_index,:,0][((lidar_xy[time_index,:,0]>2)&(lidar_xy[time_index,:,0]<60))]
-    lidar_y = lidar_xy[time_index,:,1][((lidar_xy[time_index,:,0]>2)&(lidar_xy[time_index,:,0]<60))]
+    lidar_x = lidar_xy[time_index,:,0][((lidar_xy[time_index,:,0]>0.5)&(lidar_xy[time_index,:,0]<60))]
+    lidar_y = lidar_xy[time_index,:,1][((lidar_xy[time_index,:,0]>0.5)&(lidar_xy[time_index,:,0]<60))]
     lidar_x = lidar_x.reshape(lidar_x.shape[0],1)
     lidar_y = lidar_y.reshape(lidar_x.shape[0],1)
     lidar_filtered = np.zeros((lidar_x.shape[0],4))
