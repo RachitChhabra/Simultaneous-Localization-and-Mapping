@@ -47,7 +47,7 @@ difference = (data_encoder[1:data_encoder.shape[0],0]-data_encoder[0:data_encode
 encoder_clicks[:,:] = np.reshape(difference[1:difference.shape[0]],(encoder_clicks.shape[0],1))
 
 ##--------  Addition of Noise in Encoder --------##
-noise = np.random.normal(0,0.01,(encoder_clicks.shape[0],no_of_particles))   #(116046, particles)
+noise = np.random.normal(0,20,(encoder_clicks.shape[0],no_of_particles))   #(116046, particles)
 
 encoder_clicks+=noise
 
@@ -71,7 +71,7 @@ yaw_n = np.zeros((delta_yaw_10.shape[0],no_of_particles))   #(116046, 1)
 yaw_n[:,:] = np.reshape(delta_yaw_10[0:delta_yaw_10.shape[0]],(yaw_n.shape[0],1))
 
 ##--------  Addition of Noise in Yaw Angle --------##
-noise_yaw = np.random.normal(0,0,(yaw_n.shape[0],no_of_particles))   #(116046, particles)
+noise_yaw = np.random.normal(0,0.01,(yaw_n.shape[0],no_of_particles))   #(116046, particles)
 yaw_n+=noise_yaw
 
 state_vector = np.stack((np.multiply(v,np.cos(yaw_n)),np.multiply(v,np.sin(yaw_n)),yaw_n),axis = 2)  #(116046, particles, 3)

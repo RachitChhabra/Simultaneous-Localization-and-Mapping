@@ -1,5 +1,6 @@
 from more_itertools import time_limited
 import numpy as np
+import random
 import matplotlib.pyplot as plt;
 from pr2_utils import read_data_from_csv,bresenham2D, mapCorrelation
 from predict import *
@@ -58,26 +59,37 @@ def update(xy, iteration, alpha):
         x_coordinate = np.array(x_coordinate)
         y_coordinate = np.array(y_coordinate)
 
-        map[-y_coordinate+resolution,x_coordinate+resolution] += np.log(8)
+        map[-y_coordinate+resolution,x_coordinate+resolution] += np.log(9)
 
-        if(map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution]>-5):
+        if(map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution]>0):
             map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution] -= np.log(64)
-
-
-
 
     return alpha
 
+def resample(xy, alpha):
+    new_alpha = np.zeros(alpha.shape)
+    new_xy = np.zeros(xy.shape)
+    print(alpha)
+    index = random.choice(range(0, no_of_particles-1))
+    beta = 0 
+    for i in range(no_of_particles):
+        beta += random.uniform(0,2*np.max(alpha))
+        while alpha[index] < beta:
+            beta -= alpha[index]
+            index += 1
+            if index == 10:
+                index = 0
+        new_alpha[i] = 1/no_of_particles
+        new_xy[i] = xy[index]
+    print(new_alpha)
+    print('Resampled')
+    return new_xy, new_alpha
 
 
 
 def softmax(x):
     e_x = np.exp(x - np.max(x))
     return e_x / e_x.sum()
-
-
-
-
 
 def get_lidar_coordinates(xy, iteration):           ## xy = [x , y , theta] -> (particles x 3)
     # 1. # Filter Lidar coordinates - Only values 1 < r < 60
@@ -90,7 +102,7 @@ def get_lidar_coordinates(xy, iteration):           ## xy = [x , y , theta] -> (
     transformation2 = np.stack([np.sin(theta),  np.cos(theta), np.zeros((no_of_particles,1)), y],axis = 2)  ## (particles x 4)
     transformation = np.hstack((transformation1,transformation2))                                           ## (particles x 2 x 4)
 
-    time_index = argmin(timestamp_lidar,timestamp_encoder[iteration])
+    time_index = argmin(timestamp_lidar,timestamp_encoder[iteration]) 
 
     lidar_x = lidar_xy[time_index,:,0][((lidar_xy[time_index,:,0]>0.5)&(lidar_xy[time_index,:,0]<60))]
     lidar_y = lidar_xy[time_index,:,1][((lidar_xy[time_index,:,0]>0.5)&(lidar_xy[time_index,:,0]<60))]
