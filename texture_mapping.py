@@ -4,6 +4,7 @@ import os, cv2
 from update import argmin
 from pr2_utils import read_data_from_csv
 import matplotlib.pyplot as plt;
+from decimal import Decimal 
 
 fsu = 7.7537235550066748e+02
 fsv = 7.7537235550066748e+02
@@ -20,6 +21,11 @@ xy_traj = np.load('particle_trajectory_low_noise.npy')
 
 timestamp_lidar,_ = read_data_from_csv('sensor_data/lidar.csv')      #  data_lidar ->  (115865, 286), timestamp_lidar (115865,)
 
+file_time_left = np.zeros((1161,1))
+file_time_right = np.zeros((1161,1))
+
+file_time_left = np.load('file_time_left.npy')
+file_time_right = np.load('file_time_right.npy')
 
 
 disparity_matrix = np.zeros((1161,560,1280))
@@ -40,7 +46,40 @@ vL = np.transpose(vL)
 res = 1
 separator = '.'
 maxsplit = 1
-folder = 'stereo_images/stereo_right/'
+folder = 'stereo_images/stereo_left/'
+
+
+
+path_l = 'stereo_images/stereo_left'
+file_l = []
+temp_l = 0
+for filename_l in sorted(os.listdir(path_l)):
+    temp_l, _ = filename_l.split('.',1)
+    file_l = np.append(file_l,Decimal(temp_l))
+
+path_r = 'stereo_images/stereo_right'
+file_r = []
+temp_r = 0
+for filename_r in sorted(os.listdir(path_r)):
+    temp_r, _ = filename_r.split('.',1)
+    file_r = np.append(file_r,Decimal(temp_r))
+
+file_rr = []
+for j in file_r:
+    idx = np.argmin(np.abs(file_l - j))
+    file_rr = np.append(file_rr, file_r[idx])
+
+
+
+
+
+
+
+
+
+
+
+
 
 def texture_mapping():
 
@@ -50,20 +89,17 @@ def texture_mapping():
 
 left_dir = 'stereo_images/stereo_left/'
 right_dir = 'stereo_images/stereo_right/'
-common_images = set.intersection(*(set(os.path.relpath(os.path.join(root, file), path) for root, _, files in os.walk(path) for file in files) for path in (left_dir, right_dir)))
 
 def get_stereo_coordinates():
-    image_no = 0
 
-    for filename in tqdm(sorted(common_images)):
-        disparity_matrix[image_no] = compute_stereo(filename)
+    for image_no in tqdm(range(file_time_right.shape[0])):
+        disparity_matrix[image_no] = compute_stereo(file_l[image_no],file_rr[image_no])
         imagez[image_no] =  (1/disparity_matrix[image_no])*fsu*b
         imagez[image_no][imagez[image_no]>50] = 0
         imagex[image_no] =  (1/fsu)*(uL - cu)*imagez[image_no]
         imagey[image_no] =  (1/fsv)*(vL - cv)*imagez[image_no]
 
-        name,_ = filename.split(separator, maxsplit)
-        file_time[image_no] = int(name)
+        file_time[image_no] = int(file_l[image_no])
 
         imagexyz = np.stack((imagex[image_no],imagey[image_no],imagez[image_no]),axis = 2)
         a = np.zeros((560,1280,3))
@@ -84,7 +120,6 @@ def get_stereo_coordinates():
 
         transformation = np.stack((transformation1,transformation2, transformation3, transformation4))   ## (4 x 4)
 
-        print(transformation)
         c = np.zeros((560,1280,4))
         for j in range(0,560):
             c[j] = np.transpose(transformation*np.transpose(m1231[j]))
@@ -93,16 +128,14 @@ def get_stereo_coordinates():
         m2[image_no] = c[:,:,1]
         m3[image_no] = c[:,:,2]
 
-        image_no+=1
-
     # stacked = np.stack((m1,m2,m3),axis = 3)
     # print('Transformed')
     # np.save('stereo_in_world',stacked)
 
     # np.savetxt('Yo.txt',disparity_matrix[disparity_matrix!=0])
-    np.save('f1_R_reversed',m1)
-    np.save('f2_R_reversed',m2)
-    np.save('f3_R_reversed',m3)
+    np.save('f1_full',m1)
+    np.save('f2_full',m2)
+    np.save('f3_full',m3)
     # np.save('stereo_images_timestamp',file_time)
     # np.save('disparity_matrix',disparity_matrix)
 
@@ -110,17 +143,17 @@ def get_stereo_coordinates():
 def load_data():
     #map     = np.loadtxt('map_particles_100_res_0_5_map_9_more_noise.txt')
     #f1      = np.load('f1.npy')
-    f1      = np.load('f1_R_reversed.npy')     
+    f1      = np.load('f1_full.npy')     
     #f2      = np.load('f2.npy')
-    f2      = np.load('f2_R_reversed.npy') 
-    f3      = np.load('f3_R_reversed.npy')
+    f2      = np.load('f2_full.npy') 
+    f3      = np.load('f3_full.npy')
     #traj_xy = np.load('particle_trajectory.npy')
     
     # stereo_time_stamp    = np.load('stereo_images_timestamp.npy')
     # for file in tqdm(sorted(path_l)):
     count=0
     textured_img = np.zeros((1500,2000,3))
-    for files in tqdm(sorted(common_images)):
+    for files in tqdm(sorted(os.listdir(folder))):
 
         img = cv2.imread(os.path.join(folder,files),0)
         img = cv2.cvtColor(img, cv2.COLOR_BAYER_BG2BGR)
@@ -153,21 +186,19 @@ def fun():
     load_data()
 
 
-def compute_stereo(filename):
+def compute_stereo(file_left,file_right):
   # path_l = 'code/data/image_left.png'
   # path_r = 'code/data/image_right.png'
 
   path_l = 'stereo_images/stereo_left/'
   path_r = 'stereo_images/stereo_right/'
 
-  # image_l = cv2.imread(path_l, 0)
-  # image_r = cv2.imread(path_r, 0)
-
-  # image_l = cv2.imread(os.path.join(path_l,filename), 0)
-  # image_r = cv2.imread(os.path.join(path_r,filename), 0)
-
-  image_l = cv2.imread(os.path.join(path_l,filename),0)
-  image_r = cv2.imread(os.path.join(path_r,filename),0)
+  path_l += str(file_left) +'.png'
+  path_r += str(file_right) +'.png'
+  print(path_l)
+  print(path_r)
+  image_l = cv2.imread(path_l,0)
+  image_r = cv2.imread(path_r,0)
 
   image_l = cv2.cvtColor(image_l, cv2.COLOR_BAYER_BG2BGR)
   image_r = cv2.cvtColor(image_r, cv2.COLOR_BAYER_BG2BGR)
@@ -190,9 +221,31 @@ def compute_stereo(filename):
   return disparity
 
 
+def process_filenames():
+    files = []
+    left_dir = 'stereo_images/stereo_left'
+    right_dir = 'stereo_images/stereo_right'
+    common_images = set.intersection(*(set(os.path.relpath(os.path.join(root, file), path) for root, _, files in os.walk(path) for file in files) for path in (left_dir, right_dir)))
+    for im in common_images:
+        files.append([im,im])
+    right = []
+    left = []
+    for filename in os.listdir(left_dir):
+        if(filename not in common_images):
+            left.append(Decimal(filename.split('.')[0]))
 
+    for filename in os.listdir(right_dir):
+        if(filename not in common_images):
+            right.append(Decimal(filename.split('.')[0]))
+
+    right = np.asarray(right)
+    left = np.asarray(left)
+
+    for filename in left:
+        files.append([str(filename) +'.png', str(right.flat[np.abs(right - filename).argmin()]) + '.png'])
+    return np.asarray(files)
 
 if __name__ == '__main__':
-    texture_mapping()
-    #fun()
+    #texture_mapping()
+    fun()
 

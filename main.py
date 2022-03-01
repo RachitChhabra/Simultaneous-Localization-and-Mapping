@@ -13,12 +13,12 @@ xy_traj = np.zeros((116046,3))
 
 fig = plt.figure()
 
-for i in tqdm(range(116045)):
+for i in tqdm(range(11604)):
     #PREDICT STEP
     xy_out = predict(xy,i)
     
-    #if( i % 5 == 0):
-        #alpha = update(xy,i,alpha)
+    if( i % 5 == 0):
+        alpha = update(xy,i,alpha)
     xy = xy_out
 
     trajectory_particle = np.argmax(alpha)
@@ -42,8 +42,8 @@ map[(map>=6)] = 1
 # np.savetxt('map_particles_100_res_0_5_map_9_more_noise_resampling_0.5.txt',map)
 
 
-#plt.imshow(map,cmap = 'bone')
-plt.scatter(xy_traj[:,0],xy_traj[:,1],color = "r", s = 0.005)
+plt.imshow(map,cmap = 'bone')
+plt.scatter(xy_traj[:,0]+int(500/res),-xy_traj[:,1]+int(500/res),color = "r", s = 0.005)
 plt.show(block = True)
 # cv2.waitKey(30000)
 
