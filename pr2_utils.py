@@ -1,9 +1,10 @@
 import pandas as pd
-import cv2
+import cv2, os
 import numpy as np
 import matplotlib.pyplot as plt; plt.ion()
 from mpl_toolkits.mplot3d import Axes3D
 import time
+from skimage import io
 
 
 R_vehicle2lidar   = np.matrix('0.00130201 0.796097 0.605167; 0.999999 -0.000419027 -0.00160026; -0.00102038 0.605169 -0.796097')
@@ -11,11 +12,6 @@ p_vehicle2lidar   = np.matrix('0.8349; -0.0126869; 1.76416')
 T_vehicle2lidar   = np.matrix('0.00130201 0.796097 0.605167 0.8349;0.999999 -0.000419027 -0.00160026 -0.0126869; -0.00102038 0.605169 -0.796097 1.76416; 0 0 0 1')
 RPY_vehicle2lidar = np.matrix('142.759; 0.0584636; 89.9254')
 T_lidar2vehicle   = np.linalg.inv(T_vehicle2lidar)
-
-R_vehicle2stereo   = np.matrix('-0.00680499 -0.0153215 0.99985; -0.999977 0.000334627 -0.00680066; -0.000230383 -0.999883 -0.0153234')
-p_vehicle2stereo   = np.matrix('1.64239; 0.247401; 1.58411')
-T_vehicle2stereo   = np.matrix('-0.00680499 -0.0153215 0.99985 1.64239; -0.999977 0.000334627 -0.00680066 0.247401; -0.000230383 -0.999883 -0.0153234 1.58411; 0 0 0 1')
-RPY_vehicle2stereo = np.matrix('-90.878; 0.0132; -90.3899')
 
 R_vehicle2fog   = np.matrix('1 0 0; 0 1 0; 0 0 1')
 p_vehicle2fog   = np.matrix('1 0 0 -0.335; 0 1 0 -0.035; 0 0 1 0.78; 0 0 0 1')
@@ -27,12 +23,21 @@ def tic():
 def toc(tstart, name="Operation"):
   print('%s took: %s sec.\n' % (name,(time.time() - tstart)))
 
-def compute_stereo():
-  path_l = 'code/data/image_left.png'
-  path_r = 'code/data/image_right.png'
+def compute_stereo(filename):
+  # path_l = 'code/data/image_left.png'
+  # path_r = 'code/data/image_right.png'
 
-  image_l = cv2.imread(path_l, 0)
-  image_r = cv2.imread(path_r, 0)
+  path_l = 'stereo_images/stereo_left/'
+  path_r = 'stereo_images/stereo_right/'
+
+  # image_l = cv2.imread(path_l, 0)
+  # image_r = cv2.imread(path_r, 0)
+
+  # image_l = cv2.imread(os.path.join(path_l,filename), 0)
+  # image_r = cv2.imread(os.path.join(path_r,filename), 0)
+
+  image_l = cv2.imread(os.path.join(path_l,filename),0)
+  image_r = cv2.imread(os.path.join(path_r,filename),0)
 
   image_l = cv2.cvtColor(image_l, cv2.COLOR_BAYER_BG2BGR)
   image_r = cv2.cvtColor(image_r, cv2.COLOR_BAYER_BG2BGR)
@@ -41,17 +46,18 @@ def compute_stereo():
   image_r_gray = cv2.cvtColor(image_r, cv2.COLOR_BGR2GRAY)
 
   # You may need to fine-tune the variables `numDisparities` and `blockSize` based on the desired accuracy
-  stereo = cv2.StereoBM_create(numDisparities=32, blockSize=9) 
+  stereo = cv2.StereoBM_create(numDisparities = 32, blockSize = 5) 
   disparity = stereo.compute(image_l_gray, image_r_gray)
 
-  fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
-  ax1.imshow(image_l)
-  ax1.set_title('Left Image')
-  ax2.imshow(image_r)
-  ax2.set_title('Right Image')
-  ax3.imshow(disparity, cmap='gray')
-  ax3.set_title('Disparity Map')
-  plt.show()
+  # fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+  # ax1.imshow(image_l)
+  # ax1.set_title('Left Image')
+  # ax2.imshow(image_r)
+  # ax2.set_title('Right Image')
+  # ax3.imshow(disparity, cmap='gray')
+  # ax3.set_title(filename)
+  # plt.show(block = True)
+  return disparity
   
 
 def read_data_from_csv(filename):

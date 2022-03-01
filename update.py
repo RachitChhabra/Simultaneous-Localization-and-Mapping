@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt;
 from pr2_utils import read_data_from_csv,bresenham2D, mapCorrelation
 from predict import *
 
-res = 0.4
+res = 1
 map = np.zeros((int(2000/res),int(2000/res))) + 0.5
 
 resolution = int(500/res)
@@ -69,7 +69,7 @@ def update(xy, iteration, alpha):
 def resample(xy, alpha):
     new_alpha = np.zeros(alpha.shape)
     new_xy = np.zeros(xy.shape)
-    print(alpha)
+    
     index = random.choice(range(0, no_of_particles-1))
     beta = 0 
     for i in range(no_of_particles):
@@ -84,7 +84,6 @@ def resample(xy, alpha):
     print(new_alpha)
     print('Resampled')
     return new_xy, new_alpha
-
 
 
 def softmax(x):
