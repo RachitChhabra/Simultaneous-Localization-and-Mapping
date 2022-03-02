@@ -1,16 +1,7 @@
-from base64 import encode
 import math
-from operator import index
-from tqdm import tqdm
-import pandas as pd
-import cv2
 import numpy as np
-import matplotlib.pyplot as plt; plt.ion()
-from mpl_toolkits.mplot3d import Axes3D
-import time
-from pr2_utils import read_data_from_csv,lidar_to_vehicle_transformation, tic,toc,bresenham2D
-from trajectory import vehicle_to_world_transformation,get_vehicle_pos,vehicle_to_world
-from lidar import run_lidar
+import matplotlib.pyplot as plt
+from pr2_utils import read_data_from_csv
 
 ##------  Initialise Rotation Matrices  ------##
 
@@ -96,4 +87,16 @@ def predict(xy_pre, iteration):
     xy_new[:,2] = state_vector[iteration,:,2]
     return xy_new
 
+
+
+def dead_reckoning():
+    x = np.reshape(trajectory[:,0,0],(116046,1))
+    y = np.reshape(trajectory[:,0,1],(116046,1))
+    plt.scatter(x,y,color = "r", s = 0.001)
+    plt.show(block = True)
+    return 0
+
+
+if __name__ == '__main__':
+    dead_reckoning()
 

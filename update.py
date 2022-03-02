@@ -11,7 +11,6 @@ map = np.zeros((int(2000/res),int(2000/res))) + 0.5
 resolution = int(500/res)
 xy = np.zeros((no_of_particles,3))
 
-
 filename = 'sensor_data/lidar.csv'
 timestamp_lidar,data_lidar = read_data_from_csv(filename)      #  data_lidar ->  (115865, 286), timestamp_lidar (115865,)
 
@@ -32,7 +31,7 @@ T_lidar2vehicle   = np.linalg.inv(T_vehicle2lidar)
 lidar_2d = lidar_xy.reshape((data_lidar.size,4))                     # reshape for transformaition to vehicle frame (33137390, 4)
 lidar_2d = np.matmul(T_lidar2vehicle,lidar_2d.transpose()) # lidar in 2D in vehicle frame
 lidar_xy = (np.array(lidar_2d).transpose()).reshape(lidar_xy.shape) # lidar in 3D in vehicle frame 
-
+print('lidar xy shape', lidar_xy.shape)
 
 def update(xy, iteration, alpha):
 
@@ -59,10 +58,11 @@ def update(xy, iteration, alpha):
         x_coordinate = np.array(x_coordinate)
         y_coordinate = np.array(y_coordinate)
 
-        map[-y_coordinate+resolution,x_coordinate+resolution] += np.log(9)
+        if(map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution] > -100):
+            map[-y_coordinate+resolution,x_coordinate+resolution] -= np.log(64)       ## Occupied Cell
 
-        if(map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution]>0):
-            map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution] -= np.log(64)
+        if(map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution] < 100):
+            map[-y_coordinate[-1]+resolution,x_coordinate[-1]+resolution] += np.log(9)   # UnOccupied cell
 
     return alpha
 
@@ -140,3 +140,9 @@ def argmin(array,value):
         return n-1
     else:
         return jl
+
+def lidar_scans_visualization():
+    return 0
+
+if __name__ == '__main__':
+    lidar_scans_visualization()
