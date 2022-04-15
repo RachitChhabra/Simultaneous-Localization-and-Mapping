@@ -1,10 +1,8 @@
 import pandas as pd
 import cv2, os
 import numpy as np
-import matplotlib.pyplot as plt; plt.ion()
-from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 import time
-from skimage import io
 
 
 R_vehicle2lidar   = np.matrix('0.00130201 0.796097 0.605167; 0.999999 -0.000419027 -0.00160026; -0.00102038 0.605169 -0.796097')
@@ -279,7 +277,7 @@ def show_lidar():
   ax.set_rlabel_position(-22.5)  # get radial labels away from plotted line
   ax.grid(True)
   ax.set_title("Lidar scan data", va='bottom')
-  plt.show()
+  plt.show(block = True)
 
 def lidar_to_vehicle_transformation(data):
   lidar_angle = np.zeros((286,1))
@@ -306,9 +304,9 @@ def lidar_to_vehicle_transformation(data):
 
 if __name__ == '__main__':
   #compute_stereo()
-  #show_lidar()
+  show_lidar()
   #test_mapCorrelation()
-  test_bresenham2D()
+  #test_bresenham2D()
   #buildmap()
 
 

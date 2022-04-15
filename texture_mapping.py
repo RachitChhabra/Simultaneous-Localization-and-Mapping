@@ -12,8 +12,7 @@ cu  = 6.1947309112548828e+02
 cv  = 2.5718049049377441e+02
 b   = 0.475143600050775
 
-occupancy_grid = np.load('rgb_occupancy_grid.npy')    ## (2000 x 2000)
-
+rgb_occupancy_grid = np.load('rgb_occupancy_grid.npy')    ## (2000 x 2000)
 
 R_vehicle2stereo   = np.matrix('-0.00680499 -0.0153215 0.99985; -0.999977 0.000334627 -0.00680066; -0.000230383 -0.999883 -0.0153234')
 p_vehicle2stereo   = np.matrix('1.64239; 0.247401; 1.58411')
@@ -50,29 +49,6 @@ res = 1
 separator = '.'
 maxsplit = 1
 folder = 'stereo_images/stereo_left/'
-
-path_l = 'stereo_images/stereo_left'
-file_l = []
-temp_l = 0
-for filename_l in sorted(os.listdir(path_l)):
-    temp_l, _ = filename_l.split(separator,maxsplit)
-    file_l = np.append(file_l,Decimal(temp_l))
-
-path_r = 'stereo_images/stereo_right'
-file_r = []
-temp_r = 0
-for filename_r in sorted(os.listdir(path_r)):
-    temp_r, _ = filename_r.split(separator,maxsplit)
-    file_r = np.append(file_r,Decimal(temp_r))
-
-file_rr = []
-for j in file_r:
-    idx = np.argmin(np.abs(file_l - j))
-    file_rr = np.append(file_rr, file_r[idx])
-
-
-left_dir = 'stereo_images/stereo_left/'
-right_dir = 'stereo_images/stereo_right/'
 
 def load_data():
 
@@ -133,17 +109,17 @@ def texture_mapping():
         
         for i in range(560):
             for j in range(1280):
-                if((f3[count,i,j]<1)&(f3[count,i,j]>-1)):
+                if((f3[count,i,j]<1)&(f3[count,i,j]>-10)):
                     a = -int(f2[count,i,j])+500
                     b =  int(f1[count,i,j])+500
-                    textured_img[a,b] = img[i,j]
+                    if(rgb_occupancy_grid[a,b,0]== 255):
+                        rgb_occupancy_grid[a,b] = img[i,j]
 
-        if count == 1161:
-            break
 
         count+=1
-
-    plt.imshow((textured_img).astype(np.uint8))
+    
+    plt.imshow((rgb_occupancy_grid).astype(np.uint8))
+    plt.scatter(xy_traj[:,0]+int(500/res),-xy_traj[:,1]+int(500/res),color = "r", s = 0.002)
     plt.show(block = True)
     plt.axis("off")
 
@@ -168,6 +144,30 @@ def compute_stereo(file_left,file_right):
   disparity = stereo.compute(image_l_gray, image_r_gray)
 
   return disparity
+
+
+path_l = 'stereo_images/stereo_left'
+file_l = []
+temp_l = 0
+for filename_l in sorted(os.listdir(path_l)):
+    temp_l, _ = filename_l.split(separator,maxsplit)
+    file_l = np.append(file_l,Decimal(temp_l))
+
+path_r = 'stereo_images/stereo_right'
+file_r = []
+temp_r = 0
+for filename_r in sorted(os.listdir(path_r)):
+    temp_r, _ = filename_r.split(separator,maxsplit)
+    file_r = np.append(file_r,Decimal(temp_r))
+
+file_rr = []
+for j in file_r:
+    idx = np.argmin(np.abs(file_l - j))
+    file_rr = np.append(file_rr, file_r[idx])
+
+
+left_dir = 'stereo_images/stereo_left/'
+right_dir = 'stereo_images/stereo_right/'
 
 
 if __name__ == '__main__':

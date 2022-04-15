@@ -1,11 +1,10 @@
-from more_itertools import time_limited
 import numpy as np
 import random
 import matplotlib.pyplot as plt;
-from pr2_utils import read_data_from_csv,bresenham2D, mapCorrelation
+from pr2_utils import read_data_from_csv,bresenham2D, mapCorrelation, show_lidar
 from predict import *
 
-res = 1
+res = 0.5
 map = np.zeros((int(2000/res),int(2000/res))) + 0.5
 
 resolution = int(500/res)
@@ -142,7 +141,8 @@ def argmin(array,value):
         return jl
 
 def lidar_scans_visualization():
-    return 0
+    ##Visualise the LiDAR scan.
+    show_lidar()
 
 if __name__ == '__main__':
     lidar_scans_visualization()
